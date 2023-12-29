@@ -1,0 +1,23 @@
+[package]
+name = "frakt"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+complex = { path = "complex" }
+server = { path = "server" }
+shared = { path = "shared" }
+worker = { path = "worker" }
+
+[workspace]
+members = ["complex", "server", "shared", "worker"]
+
+[dev-dependencies]
+rustfmt = "0.10.0"
+
+[dev-dependencies.cargo-husky]
+version = "1.5.0"
+default-features = false # Disable features which are enabled by default
+features = ["user-hooks"]
