@@ -14,6 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+    - name: rustfmt check
+      run: |
+        cd frakt
+        cargo fmt --all -- --check
     - name: Build
       run: |
         cd frakt
