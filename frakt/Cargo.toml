@@ -13,3 +13,6 @@ worker = { path = "./worker" }
 
 [workspace]
 members = ["complex","server", "shared", "worker"]
+
+[dev-dependencies]
+rustfmt = "0.10.0"
