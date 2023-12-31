@@ -2,11 +2,13 @@
 
 set -e
 
-echo '+cargo fmt'
-cargo fmt
-
+# rustfmt
 echo '+cargo fmt --all -- --check'
 cargo fmt --all -- --check
 
+echo '+cargo fmt'
+cargo fmt
+
+# unit & integration tests
 echo '+cargo test'
 cargo test

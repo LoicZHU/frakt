@@ -3,26 +3,34 @@
 1. [Introduction](#introduction)
 2. [Lancement](#lancement)
 3. [Objectif](#objectif)
-4. [Modalites](#modalites)
+4. [Modalités](#modalites)
 
 ## Introduction
 - **Classe** : ESGI 4AL2
 - **Groupe 4** :
-  - MALHA Marc
   - LAHMADI Zakarya
+  - MALHA Marc
   - ZERGUINE Mohammed Mazene
   - ZHU Loïc
 
 ## Lancement
-- Se déplacer dans le dossier du projet :
+- Compiler et lancer les tests unitaires & d'intégration  :
   ```
-  cd frakt
+  cargo test
   ```
 - Lancer :
   ```
   cargo run
   ```
-
+- Voir la _rustdoc_ :
+  ```
+  cargo doc --open
+  ```
+- Générer / mettre à jour la _rustdoc_ :
+  ```
+  ./generate_rustdoc.sh
+  ```
+  
 ## Objectif
 - [x] Définir un "_crate_" pour:
   - [x] Le travailleur
@@ -39,11 +47,11 @@
     - [ ] sauvegarder le résultat dans une image
 
 ## Modalites
-- [ ] Code régie par `rustfmt`
+- [x] Code régie par `rustfmt`
 - [ ] Documentation README
-- [ ] Code fonctionnel sous:
-  - [ ] Linux
-  - [ ] Windows
+- [x] Code fonctionnel sous:
+  - [x] Linux
+  - [x] Windows
   - [x] MacOS
 - [ ] Code testé :
   - [ ] Tests unitaires
