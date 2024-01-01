@@ -1,5 +1,9 @@
+use serde_json::Value;
+use shared::FragmentTask;
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
+use std::thread::sleep;
+use std::time::Duration;
 
 #[derive(Debug)]
 pub struct Worker {
@@ -35,8 +39,8 @@ impl Worker {
 
           match self.send_request(&request, &mut _stream) {
             Ok(_) => {
-              // TODO: reading fragement task response
-              self.read_response(&mut _stream);
+              let fragment_task = self.read_response(&mut _stream).unwrap();
+              println!("recived fragment task: {}", fragment_task.to_string());
 
               self.stop_server();
               // TODO: creating new tcp connexion between fragementTask and result until task is valid
@@ -59,26 +63,59 @@ impl Worker {
   }
 
   fn send_request(&mut self, request: &String, stream: &mut TcpStream) -> Result<(), io::Error> {
+    println!("--- sending fragementRequest ------ ");
+    sleep(Duration::from_secs(1));
+
     let json_message = request.as_str();
     let json_size = json_message.len() as u32;
+    println!("json message size: {}", json_size);
+    sleep(Duration::from_secs(1));
 
     let total_size = json_size as usize;
+    println!(" totl size : {}", total_size);
+    println!("json message: {}", request);
+    sleep(Duration::from_secs(1));
 
     stream.write_all(&(total_size as u32).to_be_bytes())?;
-
     stream.write_all(&(json_size as u32).to_be_bytes())?;
-
     stream.write_all(json_message.as_bytes())?;
 
     Ok(())
   }
 
-  fn read_response(&self, stream: &mut TcpStream) {
-    let mut sbuf = vec![0_u8; 10000 as usize];
-    stream.read(&mut sbuf).unwrap();
-    println!("{sbuf:?}");
-    let s = String::from_utf8_lossy(&sbuf);
-    println!("{s}");
+  fn read_response(&self, stream: &mut TcpStream) -> Result<FragmentTask, String> {
+    println!("--------- reading server response ---------");
+    sleep(Duration::from_secs(1));
+
+    let mut total_size_buffer = [0; 4];
+    stream.read_exact(&mut total_size_buffer).unwrap();
+
+    let mut json_size_buffer = [0; 4];
+    stream.read_exact(&mut json_size_buffer).unwrap();
+    let json_size = u32::from_be_bytes(json_size_buffer) as usize;
+
+    let mut json_buffer = vec![0; json_size];
+    stream.read_exact(&mut json_buffer).unwrap();
+    let json_message = String::from_utf8_lossy(&json_buffer);
+
+    let json_value: Value = serde_json::from_str(&json_message)
+      .map_err(|e| format!("Failed to parse json object : {}", e))?;
+
+    if let Some(fragment_task_value) = json_value.get("FragmentTask") {
+      let fragment_task: Result<FragmentTask, _> =
+        serde_json::from_value(fragment_task_value.clone())
+          .map_err(|e| format!("Failed to get JSON object: {}", e));
+
+      match fragment_task {
+        Ok(task) => Ok(task),
+        Err(err) => {
+          eprintln!("Failed to deserialize JSON: {}", err);
+          Err(err.to_string())
+        }
+      }
+    } else {
+      Err("missing fields in json ".to_string())
+    }
   }
 
   pub fn stop_server(&mut self) {
