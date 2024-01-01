@@ -1,16 +1,17 @@
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FragementRequest {
   worker_name: String,
-  max_work_load: u32,
+  maximal_work_load: u32,
 }
 
 impl FragementRequest {
-  fn new(worker_name: String, max_work_load: u32) -> FragementRequest {
+  fn new(worker_name: String, maximal_work_load: u32) -> FragementRequest {
     FragementRequest {
       worker_name: worker_name,
-      max_work_load: max_work_load,
+      maximal_work_load: maximal_work_load,
     }
   }
 
@@ -21,9 +22,9 @@ impl FragementRequest {
     }
   }
 
-  pub fn to_json(&self) -> Result<String, serde_json::Error> {
-    serde_json::to_string(self)
-  }
+    pub fn to_json(&self) -> Result<String, serde_json::Error> {
+        serde_json::to_string(&json!({"FragmentRequest": self}))
+    }
 }
 
 pub struct FragementRequestBuilder {
@@ -63,7 +64,7 @@ mod tests {
       .unwrap();
 
     assert_eq!(fragement_request.worker_name, "Worker1");
-    assert_eq!(fragement_request.max_work_load, 10);
+    assert_eq!(fragement_request.maximal_work_load, 10);
 
     let json_string = fragement_request.to_json().unwrap();
     println!("{}", json_string);
