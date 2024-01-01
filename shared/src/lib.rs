@@ -1,14 +1,7 @@
-pub fn add(left: usize, right: usize) -> usize {
-  left + right
-}
+// fragementRequest module 
+mod fragement_request;
+pub use fragement_request::FragementRequest;
+pub use fragement_request::FragementRequestBuilder;
 
-#[cfg(test)]
-mod tests {
-  use super::*;
 
-  #[test]
-  fn it_works() {
-    let result = add(2, 2);
-    assert_eq!(result, 4);
-  }
-}
+// FragementTask module 
