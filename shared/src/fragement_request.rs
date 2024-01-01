@@ -22,9 +22,9 @@ impl FragementRequest {
     }
   }
 
-    pub fn to_json(&self) -> Result<String, serde_json::Error> {
-        serde_json::to_string(&json!({"FragmentRequest": self}))
-    }
+  pub fn to_json(&self) -> Result<String, serde_json::Error> {
+    serde_json::to_string(&json!({"FragmentRequest": self}))
+  }
 }
 
 pub struct FragementRequestBuilder {
