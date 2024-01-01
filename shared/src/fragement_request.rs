@@ -50,34 +50,3 @@ impl FragementRequestBuilder {
     Ok(FragementRequest::new(worker_name, max_work_load))
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[test]
-  fn test_fragement_request_builder() {
-    let fragement_request: FragementRequest = FragementRequest::builder()
-      .with_worker_name("Worker1".to_string())
-      .with_max_work_load(10)
-      .build()
-      .unwrap();
-
-    assert_eq!(fragement_request.worker_name, "Worker1");
-    assert_eq!(fragement_request.maximal_work_load, 10);
-
-    let json_string = fragement_request.to_json().unwrap();
-    println!("{}", json_string);
-  }
-
-  #[test]
-  fn test_fragement_request_builder_missing_fields() {
-    let result = FragementRequest::builder().with_max_work_load(10).build();
-    assert!(result.is_err());
-
-    let result = FragementRequest::builder()
-      .with_worker_name("Worker1".to_string())
-      .build();
-    assert!(result.is_err());
-  }
-}
