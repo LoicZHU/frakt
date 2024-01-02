@@ -1,10 +1,10 @@
-use shared::FragementRequest;
+use shared::FragmentRequest;
 use worker::Worker;
 
 fn main() {
   let mut worker: Worker = Worker::new("localhost".to_string(), "group3".to_string(), 8787);
 
-  let request = FragementRequest::builder()
+  let request = FragmentRequest::builder()
     .with_max_work_load(1000)
     .with_worker_name("worker1".to_string())
     .build()

@@ -1,7 +1,7 @@
 // fragementRequest module
 mod fragement_request;
-pub use fragement_request::FragementRequest;
-pub use fragement_request::FragementRequestBuilder;
+pub use fragement_request::FragmentRequest;
+pub use fragement_request::FragmentRequestBuilder;
 
 // FragementTask module
 mod fragment_task;

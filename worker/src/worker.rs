@@ -88,14 +88,20 @@ impl Worker {
     sleep(Duration::from_secs(1));
 
     let mut total_size_buffer = [0; 4];
-    stream.read_exact(&mut total_size_buffer).unwrap();
+    stream
+      .read_exact(&mut total_size_buffer)
+      .map_err(|e| format!("failed to parse message size : {}", e))?;
 
     let mut json_size_buffer = [0; 4];
-    stream.read_exact(&mut json_size_buffer).unwrap();
+    stream
+      .read_exact(&mut json_size_buffer)
+      .map_err(|e| format!("failed to parse size buffer : {}", e))?;
     let json_size = u32::from_be_bytes(json_size_buffer) as usize;
 
     let mut json_buffer = vec![0; json_size];
-    stream.read_exact(&mut json_buffer).unwrap();
+    stream
+      .read_exact(&mut json_buffer)
+      .map_err(|e| format!("failed to parse json message: {}", e))?;
     let json_message = String::from_utf8_lossy(&json_buffer);
 
     let json_value: Value = serde_json::from_str(&json_message)
