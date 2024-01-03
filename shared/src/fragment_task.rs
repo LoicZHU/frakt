@@ -14,7 +14,7 @@ pub struct FragmentTask {
 impl FragmentTask {
   pub fn new(
     id: U8Data,
-    max_iteration: u16,
+    max_iteration: u32,
     resolution: Resolution,
     range: Range,
     fractal: FractalDescriptor,
