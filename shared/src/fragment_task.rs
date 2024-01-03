@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub struct FragmentTask {
   #[serde(rename = "id")]
   pub id: U8Data,
-  pub max_iteration: u16,
+  pub max_iteration: u32,
   pub resolution: Resolution,
   pub range: Range,
   pub fractal: FractalDescriptor,
