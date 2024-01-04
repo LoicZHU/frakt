@@ -24,21 +24,69 @@ pub struct Point {
   pub y: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct Complex {
   pub re: f64,
   pub im: f64,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub enum FractalDescriptor {
-  Julia(JuliaFractal),
+impl Complex {
+  pub fn new(re: f64, im: f64) -> Self {
+    Complex { re, im }
+  }
+
+  pub fn square_norm(&self) -> f64 {
+    self.re * self.re + self.im * self.im
+  }
+
+  pub fn add(&self, other: Complex) -> Complex {
+    Complex {
+      re: self.re + other.re,
+      im: self.im + other.im,
+    }
+  }
+
+  pub fn mul(&self, other: &Complex) -> Complex {
+    Complex {
+      re: self.re * other.re - self.im * other.im,
+      im: self.re * other.im + self.im * other.re,
+    }
+  }
+
+  pub fn sin(&self) -> Complex {
+    Complex {
+      re: self.re.sin() * self.im.cosh(),
+      im: self.re.cos() * self.im.sinh(),
+    }
+  }
+
+  pub fn square(&self) -> Complex {
+    Complex {
+      re: self.re * self.re - self.im * self.im,
+      im: 2.0 * self.re * self.im,
+    }
+  }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-pub struct JuliaFractal {
+pub enum FractalDescriptor {
+  Julia(JuliaDescriptor),
+  Mandelbrot(MandelbrotDescriptor),
+  IteratedSinZ(IteratedSinZDescriptor),
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct JuliaDescriptor {
   pub c: Complex,
   pub divergence_threshold_square: f64,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct MandelbrotDescriptor {}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct IteratedSinZDescriptor {
+  pub c: Complex,
 }
 
 // add the other structs here //
