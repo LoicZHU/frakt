@@ -6,7 +6,7 @@ pub struct Range {
   pub max: Point,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct Resolution {
   pub nx: u16,
   pub ny: u16,
@@ -39,7 +39,7 @@ impl Complex {
     self.re * self.re + self.im * self.im
   }
 
-  pub fn add(&self, other: Complex) -> Complex {
+  pub fn add(&self, other: &Complex) -> Complex {
     Complex {
       re: self.re + other.re,
       im: self.im + other.im,
@@ -87,6 +87,11 @@ pub struct MandelbrotDescriptor {}
 #[derive(Debug, Deserialize, Serialize)]
 pub struct IteratedSinZDescriptor {
   pub c: Complex,
+}
+
+pub struct PixelIntensity {
+  pub zn: f32,
+  pub count: f32,
 }
 
 // add the other structs here //

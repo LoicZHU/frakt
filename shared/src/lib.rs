@@ -14,6 +14,8 @@ pub use shared_structs::FractalDescriptor;
 pub use shared_structs::IteratedSinZDescriptor;
 pub use shared_structs::JuliaDescriptor;
 pub use shared_structs::MandelbrotDescriptor;
+pub use shared_structs::PixelIntensity;
+pub use shared_structs::Point;
 pub use shared_structs::Range;
 pub use shared_structs::Resolution;
 pub use shared_structs::U8Data;

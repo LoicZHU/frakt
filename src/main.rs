@@ -1,6 +1,6 @@
 use shared::{
   Complex, FractalDescriptor, FragmentRequest, IteratedSinZDescriptor, JuliaDescriptor,
-  MandelbrotDescriptor,
+  MandelbrotDescriptor, Point, Range, Resolution,
 };
 use worker::Worker;
 
@@ -20,6 +20,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   worker.run_worker(request_str);
 
   let max_iterations = 110;
+  let resolution = Resolution { nx: 1280, ny: 960 };
+
+  let range = Range {
+    min: Point { x: -4.0, y: -3.0 },
+    max: Point { x: 4.0, y: 3.0 },
+  };
+
   let julia_descriptor_1 = JuliaDescriptor {
     c: Complex {
       re: 0.285,
@@ -35,8 +42,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     divergence_threshold_square: 4.0,
   };
 
-  worker.generate_fractal_locally(FractalDescriptor::Julia(julia_descriptor_2), max_iterations)?;
   worker.generate_fractal_locally(
+    &resolution,
+    &range,
+    FractalDescriptor::Julia(julia_descriptor_2),
+    max_iterations,
+  )?;
+
+  let mandelbrot_range = Range {
+    min: Point { x: -2.0, y: -1.25 },
+    max: Point { x: 1.0, y: 1.25 },
+  };
+  worker.generate_fractal_locally(
+    &resolution,
+    &mandelbrot_range,
     FractalDescriptor::Mandelbrot(MandelbrotDescriptor {}),
     max_iterations,
   )?;
@@ -48,6 +67,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     c: Complex { re: 0.2, im: 1.0 },
   };
   worker.generate_fractal_locally(
+    &resolution,
+    &range,
     FractalDescriptor::IteratedSinZ(sin_z_descriptor_2),
     max_iterations,
   )?;

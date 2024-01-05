@@ -1,7 +1,10 @@
 use image::{ImageBuffer, Pixel, Rgb};
 use serde_json::Value;
-use shared::{Complex, FractalDescriptor, FragmentTask, IteratedSinZDescriptor, JuliaDescriptor};
-use std::f64::consts::PI;
+use shared::{
+  Complex, FractalDescriptor, FragmentTask, IteratedSinZDescriptor, JuliaDescriptor,
+  PixelIntensity, Range, Resolution,
+};
+use std::f32::consts::PI;
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 use std::thread::sleep;
@@ -133,21 +136,22 @@ impl Worker {
   //#region fractal generation locally
   pub fn generate_fractal_locally(
     &self,
+    resolution: &Resolution,
+    range: &Range,
     fractal_descriptor: FractalDescriptor,
     max_iterations: i32,
   ) -> Result<(), image::ImageError> {
-    let WIDTH = 1280;
-    let HEIGHT = 720;
+    let (nx, ny) = (resolution, resolution);
 
     match fractal_descriptor {
       FractalDescriptor::Julia(descriptor) => {
-        self.generate_julia_fractal_locally(WIDTH, HEIGHT, descriptor, max_iterations)?
+        self.generate_julia_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
       }
       FractalDescriptor::Mandelbrot(_) => {
-        self.generate_mandelbot_fractal_locally(WIDTH, HEIGHT, max_iterations)?
+        self.generate_mandelbrot_fractal_locally(&resolution, &range, max_iterations)?
       }
       FractalDescriptor::IteratedSinZ(descriptor) => {
-        self.generate_sin_z_fractal_locally(WIDTH, HEIGHT, descriptor, max_iterations)?
+        self.generate_sin_z_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
       }
       _ => println!("Unknown fractal descriptor..."),
     }
@@ -157,24 +161,28 @@ impl Worker {
 
   fn generate_julia_fractal_locally(
     &self,
-    width: u32,
-    height: u32,
-    descriptor: JuliaDescriptor,
+    resolution: &Resolution,
+    range: &Range,
+    descriptor: &JuliaDescriptor,
     max_iterations: i32,
   ) -> Result<(), image::ImageError> {
-    let mut image = ImageBuffer::new(width, height);
-    let scale_for_centering_fractal =
-      Worker::calculate_scale_for_centering_fractal(width as f64, height as f64);
+    let (width, height) = (resolution.nx, resolution.ny);
+    let mut image = ImageBuffer::new(width as u32, height as u32);
     let (center_re, center_im, divergence_threshold) = (
       descriptor.c.re,
       descriptor.c.im,
       descriptor.divergence_threshold_square,
     );
 
+    let scale_x = (range.max.x - range.min.x) / width as f64;
+    let scale_y = (range.max.y - range.min.y) / height as f64;
+
     for x in 0..width {
       for y in 0..height {
-        let mut zx = scale_for_centering_fractal * (x as f64 - (width as f64 / 2.0));
-        let mut zy = scale_for_centering_fractal * (y as f64 - (height as f64 / 2.0));
+        let cx = range.min.x + x as f64 * scale_x;
+        let cy = range.min.y + y as f64 * scale_y;
+        let mut zx = cx;
+        let mut zy = cy;
         let mut i = max_iterations;
 
         let mut is_within_escape_radius_and_not_max_iterations =
@@ -189,8 +197,13 @@ impl Worker {
             zx * zx + zy * zy < divergence_threshold && i > 1
         }
 
-        let pixel = Worker::map_color_julia_fractal_locally(i);
-        image.put_pixel(x, y, pixel);
+        let pixel_intensity = PixelIntensity {
+          zn: (zx * zx + zy * zy / divergence_threshold) as f32,
+          count: i as f32 / max_iterations as f32,
+        };
+
+        let pixel = Worker::map_color_julia_fractal_locally(&pixel_intensity);
+        image.put_pixel(x as u32, y as u32, pixel);
       }
     }
 
@@ -198,41 +211,38 @@ impl Worker {
     Ok(())
   }
 
-  fn calculate_scale_for_centering_fractal(width: f64, height: f64) -> f64 {
-    let scale_factor = 3.0;
-    let min_dimension = width.min(height);
-
-    scale_factor / min_dimension
-  }
-
-  fn map_color_julia_fractal_locally(iteration: i32) -> Rgb<u8> {
-    let r = (iteration << 3) as u8;
-    let g = (iteration << 4) as u8;
-    let b = (iteration << 5) as u8;
+  fn map_color_julia_fractal_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
+    // let r = (iteration << 3) as u8;
+    let scaled_count = (pixel_intensity.count * 255.0) as i32;
+    let r = (scaled_count << 3) as u8;
+    let g = (scaled_count << 4) as u8;
+    let b = (scaled_count << 5) as u8;
 
     Rgb([r, g, b])
   }
 
-  fn generate_mandelbot_fractal_locally(
+  fn generate_mandelbrot_fractal_locally(
     &self,
-    width: u32,
-    height: u32,
+    resolution: &Resolution,
+    range: &Range,
     max_iterations: i32,
   ) -> Result<(), image::ImageError> {
-    let mut image = ImageBuffer::new(width, height);
+    let (width, height) = (resolution.nx, resolution.ny);
+    let mut image = ImageBuffer::new(width as u32, height as u32);
+
+    let scale_x = (range.max.x - range.min.x) / width as f64;
+    let scale_y = (range.max.y - range.min.y) / height as f64;
 
     for x in 0..width {
       for y in 0..height {
-        let c = Complex::new(
-          (x as f64 / width as f64) * 3.5 - 2.5, // Ajustement pour l'échelle et la position
-          (y as f64 / height as f64) * 2.0 - 1.0, // du fractal dans l'espace
-        );
+        let cx = range.min.x + (x as f64) * scale_x;
+        let cy = range.min.y + (y as f64) * scale_y;
+        let c = Complex::new(cx, cy);
 
-        let (zn, count) = Worker::mandelbrot(c, max_iterations);
+        let pixel_intensity = Worker::mandelbrot(&c, max_iterations);
+        let pixel = Worker::map_color_mandelbrot_fractal_locally(&pixel_intensity);
 
-        let pixel = Worker::map_color_mandelbrot_fractal_locally(zn, count);
-
-        image.put_pixel(x, y, pixel);
+        image.put_pixel(x as u32, y as u32, pixel);
       }
     }
 
@@ -240,7 +250,9 @@ impl Worker {
     Ok(())
   }
 
-  fn map_color_mandelbrot_fractal_locally(zn: f64, count: f64) -> Rgb<u8> {
+  fn map_color_mandelbrot_fractal_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
+    let (zn, count) = (pixel_intensity.zn, pixel_intensity.count);
+
     let hue = 0.7 + 0.3 * zn.cos();
     let saturation = 0.6 * count.cos();
     let value = 0.9 * count;
@@ -252,38 +264,39 @@ impl Worker {
     Rgb([red_intensity, green_intensity, blue_intensity])
   }
 
-  fn mandelbrot(c: Complex, max_iterations: i32) -> (f64, f64) {
+  fn mandelbrot(c: &Complex, max_iterations: i32) -> PixelIntensity {
     let n = 4.0;
     let mut z = Complex { re: 0.0, im: 0.0 };
     let mut i = 0;
 
     while z.square_norm() <= n && i < max_iterations {
-      z = z.square().add(c);
+      z = z.square().add(&c);
       i += 1;
     }
 
-    let zn = z.square_norm() / n;
-    let count = i as f64 / max_iterations as f64;
+    let zn = z.square_norm() as f32 / n as f32;
+    let count = i as f32 / max_iterations as f32;
 
-    (zn, count)
+    PixelIntensity { zn, count }
   }
 
   fn generate_sin_z_fractal_locally(
     &self,
-    width: u32,
-    height: u32,
-    descriptor: IteratedSinZDescriptor,
+    resolution: &Resolution,
+    range: &Range,
+    descriptor: &IteratedSinZDescriptor,
     max_iterations: i32,
   ) -> Result<(), image::ImageError> {
-    let mut image = ImageBuffer::new(width, height);
+    let (width, height) = (resolution.nx, resolution.ny);
+    let mut image = ImageBuffer::new(width as u32, height as u32);
     let n = 50.0;
 
-    let scale_re = 8.0;
-    let scale_im = scale_re * (height as f64 / width as f64);
+    let scale_re = (range.max.x - range.min.x) / width as f64;
+    let scale_im = (range.max.y - range.min.y) / height as f64;
 
     for (x, y, pixel) in image.enumerate_pixels_mut() {
-      let cx = (x as f64 / width as f64 - 0.5) * scale_re;
-      let cy = (y as f64 / height as f64 - 0.5) * scale_im;
+      let cx = range.min.x + x as f64 * scale_re;
+      let cy = range.min.y + y as f64 * scale_im;
 
       let mut z = Complex::new(cx, cy);
 
@@ -293,17 +306,21 @@ impl Worker {
         i += 1;
       }
 
-      let zn = z.square_norm() / n;
-      let count = i as f64 / max_iterations as f64;
+      let pixel_intensity = PixelIntensity {
+        zn: (z.square_norm() / n) as f32,
+        count: i as f32 / max_iterations as f32,
+      };
 
-      *pixel = Worker::map_color_sin_z_fractal_locally(zn, count)
+      *pixel = Worker::map_color_sin_z_fractal_locally(&pixel_intensity)
     }
 
     image.save("generated/images/sin_z_fractal.png")?;
     Ok(())
   }
 
-  fn map_color_sin_z_fractal_locally(zn: f64, count: f64) -> Rgb<u8> {
+  fn map_color_sin_z_fractal_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
+    let (zn, count) = (pixel_intensity.zn, pixel_intensity.count);
+
     let hue = 0.5 + 0.5 * (zn * 2.0 * PI).cos();
     let saturation = 0.6 + 0.4 * (count * 2.0 * PI).cos();
     let value = 0.7 + 0.3 * (count * 2.0 * PI).sin();
