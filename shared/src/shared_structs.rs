@@ -35,14 +35,18 @@ impl Complex {
     Complex { re, im }
   }
 
-  pub fn square_norm(&self) -> f64 {
-    self.re * self.re + self.im * self.im
-  }
-
   pub fn add(&self, other: &Complex) -> Complex {
     Complex {
       re: self.re + other.re,
       im: self.im + other.im,
+    }
+  }
+
+  pub fn div(&self, other: Complex) -> Complex {
+    let divisor = other.re * other.re + other.im * other.im;
+    Complex {
+      re: (self.re * other.re + self.im * other.im) / divisor,
+      im: (self.im * other.re - self.re * other.im) / divisor,
     }
   }
 
@@ -66,6 +70,17 @@ impl Complex {
       im: 2.0 * self.re * self.im,
     }
   }
+
+  pub fn square_norm(&self) -> f64 {
+    self.re * self.re + self.im * self.im
+  }
+
+  pub fn sub(&self, other: &Complex) -> Complex {
+    Complex {
+      re: self.re - other.re,
+      im: self.im - other.im,
+    }
+  }
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -73,6 +88,7 @@ pub enum FractalDescriptor {
   Julia(JuliaDescriptor),
   Mandelbrot(MandelbrotDescriptor),
   IteratedSinZ(IteratedSinZDescriptor),
+  NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -88,6 +104,11 @@ pub struct MandelbrotDescriptor {}
 pub struct IteratedSinZDescriptor {
   pub c: Complex,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct NovaNewtonRaphsonZ3Descriptor {}
+
+
 
 pub struct PixelIntensity {
   pub zn: f32,

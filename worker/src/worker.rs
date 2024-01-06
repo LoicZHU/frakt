@@ -141,8 +141,6 @@ impl Worker {
     fractal_descriptor: FractalDescriptor,
     max_iterations: i32,
   ) -> Result<(), image::ImageError> {
-    let (nx, ny) = (resolution, resolution);
-
     match fractal_descriptor {
       FractalDescriptor::Julia(descriptor) => {
         self.generate_julia_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
@@ -153,6 +151,28 @@ impl Worker {
       FractalDescriptor::IteratedSinZ(descriptor) => {
         self.generate_sin_z_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
       }
+        FractalDescriptor::NovaNewtonZ3(_) => {
+          let epsilon = 1e-6;
+          let polynomial = |z: &Complex| {
+            let z_squared = z.mul(&z);
+            let z_cubed = z_squared.mul(&z);
+            z_cubed.sub(&Complex::new(1.0, 0.0)) // z^3 - 1
+          };
+
+          let derivative = |z: &Complex| {
+            let z_squared = z.mul(&z);
+            Complex::new(3.0 * z_squared.re, 3.0 * z_squared.im) // 3z^2
+          };
+
+          self.generate_nova_newton_z3_fractal_locally(
+            &resolution,
+            &range,
+            &polynomial,
+            &derivative,
+            max_iterations,
+            epsilon,
+            )?
+        }
       _ => println!("Unknown fractal descriptor..."),
     }
 
@@ -212,7 +232,6 @@ impl Worker {
   }
 
   fn map_color_julia_fractal_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
-    // let r = (iteration << 3) as u8;
     let scaled_count = (pixel_intensity.count * 255.0) as i32;
     let r = (scaled_count << 3) as u8;
     let g = (scaled_count << 4) as u8;
@@ -330,6 +349,77 @@ impl Worker {
     let b = (240.0 * value) as u8;
 
     Rgb([r, g, b])
+  }
+
+  fn generate_nova_newton_z3_fractal_locally(
+    &self,
+    resolution: &Resolution,
+    range: &Range,
+    polynomial: &dyn Fn(&Complex) -> Complex, // p(z)
+    derivative: &dyn Fn(&Complex) -> Complex, // p'(z)
+    max_iterations: i32,
+    epsilon: f64,
+  ) -> Result<(), image::ImageError> {
+    let (width, height) = (resolution.nx, resolution.ny);
+    let mut image = ImageBuffer::new(width as u32,height as u32);
+
+    let scale_x = (range.max.x - range.min.x) / width as f64;
+    let scale_y = (range.max.y - range.min.y) / height as f64;
+
+    for x in 0..width {
+      for y in 0..height {
+        let cx = range.min.x + x as f64 * scale_x;
+        let cy = range.min.y + y as f64 * scale_y;
+
+        let mut z = Complex::new(1.0, 0.0);
+        let c = Complex::new(cx, cy);
+
+        let mut i = 0;
+        while i < max_iterations {
+          let next_z = z.sub(&polynomial(&z).div(derivative(&z))).add(&c);
+          if (next_z.sub(&z)).square_norm() < epsilon {
+            break;
+          }
+
+          z = next_z;
+          i += 1;
+        }
+
+        let pixel_intensity = PixelIntensity {
+          zn: 0.0,
+          count: i as f32 / max_iterations as f32,
+        };
+
+        let pixel = Worker::map_color_nova_newton_z3(&pixel_intensity);
+        image.put_pixel(x as u32, y as u32, pixel);
+      }
+    }
+
+    image.save("generated/images/nova_newton_fractal_z3.png")?;
+    Ok(())
+  }
+
+  fn map_color_nova_newton_z3(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
+    let normalized_count = pixel_intensity.count;
+    let slight_variation = (pixel_intensity.zn * 5.0).sin().abs() * 0.1;
+
+    let red_to_yellow = Rgb([(255.0 * normalized_count * 6.0) as u8, (255.0 * slight_variation) as u8, 0]);
+    let yellow_to_green = Rgb([255, (255.0 * (normalized_count * 6.0 - 1.0)) as u8, (255.0 * slight_variation) as u8]);
+    let green_to_cyan = Rgb([(255.0 * (1.0 - (normalized_count * 6.0 - 2.0))) as u8, 255, (255.0 * slight_variation) as u8]);
+    let cyan_to_blue = Rgb([(255.0 * slight_variation) as u8, 255, (255.0 * (normalized_count * 6.0 - 3.0)) as u8]);
+    let blue_to_magenta = Rgb([(255.0 * slight_variation) as u8, (255.0 * (1.0 - (normalized_count * 6.0 - 4.0))) as u8, 255]);
+    let magenta_to_red = Rgb([(255.0 * (normalized_count * 6.0 - 5.0)) as u8, (255.0 * slight_variation) as u8, 255]);
+
+    let color = match (normalized_count * 6.0) as i32 {
+      0..=1 => red_to_yellow,
+      1..=2 => yellow_to_green,
+      2..=3 => green_to_cyan,
+      3..=4 => cyan_to_blue,
+      4..=5 => blue_to_magenta,
+      _ => magenta_to_red,
+    };
+
+    color
   }
   //#endregion
 }

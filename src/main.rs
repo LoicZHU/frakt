@@ -1,7 +1,4 @@
-use shared::{
-  Complex, FractalDescriptor, FragmentRequest, IteratedSinZDescriptor, JuliaDescriptor,
-  MandelbrotDescriptor, Point, Range, Resolution,
-};
+use shared::{Complex, FractalDescriptor, FragmentRequest, IteratedSinZDescriptor, JuliaDescriptor, MandelbrotDescriptor, NovaNewtonRaphsonZ3Descriptor, Point, Range, Resolution};
 use worker::Worker;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -72,6 +69,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     FractalDescriptor::IteratedSinZ(sin_z_descriptor_2),
     max_iterations,
   )?;
+
+  worker.generate_fractal_locally(&resolution, &range, FractalDescriptor::NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor{}), max_iterations)?;
 
   Ok(())
 }
