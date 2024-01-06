@@ -18,9 +18,9 @@
   ```
   cargo test
   ```
-- Lancer :
+- Lancer un client avec ou sans serveur :
   ```
-  cargo run
+  cargo run -- worker localhost
   ```
 - Voir la _rustdoc_ :
   ```
@@ -40,7 +40,7 @@
 
 - [ ] Réaliser un petit serveur pour tester un travailleur.
 - [ ] Travailleur :
-  - [ ] Lancement d'un travailleur avec `worker [server_address]`
+  - [x] Lancement d'un travailleur avec `worker [server_address]`
   - [ ] Gérer plusieurs définitions de fractales (en commençant par les ensemble de Julia)
   - [ ] Avoir un résultat :
     - [ ] effectuer un rendu en local
