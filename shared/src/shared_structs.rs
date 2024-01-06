@@ -90,12 +90,17 @@ impl Complex {
 #[derive(Debug, Deserialize, Serialize)]
 pub enum FractalDescriptor {
   Julia(JuliaDescriptor),
-  Mandelbrot(MandelbrotDescriptor),
   IteratedSinZ(IteratedSinZDescriptor),
+  Mandelbrot(MandelbrotDescriptor),
   NewtonRaphsonZ3(NewtonRaphsonZ3Descriptor),
   NewtonRaphsonZ4(NewtonRaphsonZ4Descriptor),
   NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor),
   NovaNewtonZ4(NovaNewtonRaphsonZ4Descriptor),
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct IteratedSinZDescriptor {
+  pub c: Complex,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -106,11 +111,6 @@ pub struct JuliaDescriptor {
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct MandelbrotDescriptor {}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct IteratedSinZDescriptor {
-  pub c: Complex,
-}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NewtonRaphsonZ3Descriptor {}

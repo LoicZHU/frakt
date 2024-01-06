@@ -37,8 +37,8 @@ fn generate_all_fractals_locally(
   max_iterations: i32,
 ) -> Result<(), Box<dyn std::error::Error>> {
   generate_julia_fractal(&worker, &resolution, max_iterations)?;
-  generate_mandelbrot_fractal(&worker, &resolution, max_iterations)?;
   generate_iterated_sin_z_fractal(&worker, &resolution, max_iterations)?;
+  generate_mandelbrot_fractal(&worker, &resolution, max_iterations)?;
 
   generate_newton_z3_fractal(&worker, &resolution, max_iterations)?;
   generate_newton_z4_fractal(&worker, &resolution, max_iterations)?;
@@ -59,14 +59,14 @@ fn generate_julia_fractal(
     max: Point { x: 4.0, y: 3.0 },
   };
 
-  let julia_descriptor_1 = JuliaDescriptor {
+  let _julia_descriptor_1 = JuliaDescriptor {
     c: Complex {
       re: 0.285,
       im: 0.013,
     },
     divergence_threshold_square: 4.0,
   };
-  let julia_descriptor_2 = JuliaDescriptor {
+  let _julia_descriptor_2 = JuliaDescriptor {
     c: Complex {
       re: -0.9,
       im: 0.27015,
@@ -77,7 +77,7 @@ fn generate_julia_fractal(
   worker.generate_fractal_locally(
     &resolution,
     &range,
-    FractalDescriptor::Julia(julia_descriptor_2),
+    FractalDescriptor::Julia(_julia_descriptor_2),
     max_iterations,
   )?;
 
@@ -114,17 +114,17 @@ fn generate_iterated_sin_z_fractal(
     max: Point { x: 4.0, y: 3.0 },
   };
 
-  let sin_z_descriptor_1 = IteratedSinZDescriptor {
+  let _sin_z_descriptor_1 = IteratedSinZDescriptor {
     c: Complex { re: 1.0, im: 0.3 },
   };
-  let sin_z_descriptor_2 = IteratedSinZDescriptor {
+  let _sin_z_descriptor_2 = IteratedSinZDescriptor {
     c: Complex { re: 0.2, im: 1.0 },
   };
 
   worker.generate_fractal_locally(
     &resolution,
     &range,
-    FractalDescriptor::IteratedSinZ(sin_z_descriptor_2),
+    FractalDescriptor::IteratedSinZ(_sin_z_descriptor_2),
     max_iterations,
   )?;
 

@@ -1,4 +1,4 @@
-use image::{ImageBuffer, Pixel, Rgb};
+use image::{ImageBuffer, Rgb};
 use serde_json::Value;
 use shared::{
   Complex, FractalDescriptor, FragmentTask, IteratedSinZDescriptor, JuliaDescriptor,
@@ -148,10 +148,13 @@ impl Worker {
       FractalDescriptor::Mandelbrot(_) => {
         self.generate_mandelbrot_fractal_locally(&resolution, &range, max_iterations)?
       }
-      FractalDescriptor::IteratedSinZ(descriptor) => {
-        self.generate_sin_z_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
-      }
-      FractalDescriptor::NewtonRaphsonZ3(descriptor) => {
+      FractalDescriptor::IteratedSinZ(descriptor) => self.generate_iterated_sin_z_fractal_locally(
+        &resolution,
+        &range,
+        &descriptor,
+        max_iterations,
+      )?,
+      FractalDescriptor::NewtonRaphsonZ3(_) => {
         let epsilon = 1e-6;
         let polynomial = |z: &Complex| {
           let z_squared = z.mul(&z);
@@ -174,7 +177,7 @@ impl Worker {
           "newton_fractal_z3",
         )?
       }
-      FractalDescriptor::NewtonRaphsonZ4(descriptor) => {
+      FractalDescriptor::NewtonRaphsonZ4(_) => {
         let epsilon = 1e-6;
         let polynomial = |z: &Complex| {
           let z_squared = z.mul(&z);
@@ -244,8 +247,7 @@ impl Worker {
           epsilon,
           "nova_newton_fractal_z4",
         )?
-      }
-      _ => println!("Unknown fractal descriptor..."),
+      } // _ => println!("Unknown fractal descriptor..."),
     }
 
     Ok(())
@@ -305,9 +307,11 @@ impl Worker {
 
   fn map_color_julia_fractal_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
     let scaled_count = (pixel_intensity.count * 255.0) as i32;
-    let r = (scaled_count << 3) as u8;
-    let g = (scaled_count << 4) as u8;
-    let b = (scaled_count << 5) as u8;
+    let zn_effect = (pixel_intensity.zn * 10.0).sin().abs() * 5.0; // very minimal effect
+
+    let r = (((scaled_count << 3) as u8) as f32 + zn_effect).min(255.0) as u8;
+    let g = (((scaled_count << 4) as u8) as f32 + zn_effect).min(255.0) as u8;
+    let b = (((scaled_count << 5) as u8) as f32 + zn_effect).min(255.0) as u8;
 
     Rgb([r, g, b])
   }
@@ -371,7 +375,7 @@ impl Worker {
     PixelIntensity { zn, count }
   }
 
-  fn generate_sin_z_fractal_locally(
+  fn generate_iterated_sin_z_fractal_locally(
     &self,
     resolution: &Resolution,
     range: &Range,
@@ -405,7 +409,7 @@ impl Worker {
       *pixel = Worker::map_color_sin_z_fractal_locally(&pixel_intensity)
     }
 
-    image.save("generated/images/sin_z_fractal.png")?;
+    image.save("generated/images/iterated_sin_z_fractal.png")?;
     Ok(())
   }
 
@@ -463,7 +467,7 @@ impl Worker {
           count: i as f32 / max_iterations as f32,
         };
 
-        let pixel = Worker::map_color_nova_newton_z3(&pixel_intensity);
+        let pixel = Worker::map_color_nova_newton_z3_locally(&pixel_intensity);
         image.put_pixel(x as u32, y as u32, pixel);
       }
     }
@@ -474,7 +478,7 @@ impl Worker {
     Ok(())
   }
 
-  fn map_color_nova_newton_z3(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
+  fn map_color_nova_newton_z3_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
     let normalized_count = pixel_intensity.count;
     let slight_variation = (pixel_intensity.zn * 5.0).sin().abs() * 0.1;
 
@@ -510,11 +514,11 @@ impl Worker {
     ]);
 
     let color = match (normalized_count * 6.0) as i32 {
-      0..=1 => red_to_yellow,
-      1..=2 => yellow_to_green,
-      2..=3 => green_to_cyan,
-      3..=4 => cyan_to_blue,
-      4..=5 => blue_to_magenta,
+      0 => red_to_yellow,
+      1 => yellow_to_green,
+      2 => green_to_cyan,
+      3 => cyan_to_blue,
+      4 => blue_to_magenta,
       _ => magenta_to_red,
     };
 
@@ -581,15 +585,20 @@ impl Worker {
   fn map_color_newton_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
     let start_red_color = Rgb([255, 0, 0]);
     let end_blue_color = Rgb([0, 0, 255]);
+    let zn_effect = (pixel_intensity.zn * 10.0).sin().abs() * 0.05;
 
-    let r = (start_red_color[0] as f64 * (1.0 - pixel_intensity.count as f64)
-      + end_blue_color[0] as f64 * pixel_intensity.count as f64) as u8;
-    let g = (start_red_color[1] as f64 * (1.0 - pixel_intensity.count as f64)
-      + end_blue_color[1] as f64 * pixel_intensity.count as f64) as u8;
-    let b = (start_red_color[2] as f64 * (1.0 - pixel_intensity.count as f64)
-      + end_blue_color[2] as f64 * pixel_intensity.count as f64) as u8;
+    let r = ((start_red_color[0] as f32 * (1.0 - pixel_intensity.count)
+      + end_blue_color[0] as f32 * pixel_intensity.count)
+      * (1.0 - zn_effect)) as u8;
+    let g = ((start_red_color[1] as f32 * (1.0 - pixel_intensity.count)
+      + end_blue_color[1] as f32 * pixel_intensity.count)
+      * (1.0 - zn_effect)) as u8;
+    let b = ((start_red_color[2] as f32 * (1.0 - pixel_intensity.count)
+      + end_blue_color[2] as f32 * pixel_intensity.count)
+      * (1.0 - zn_effect)) as u8;
 
     Rgb([r, g, b])
   }
+
   //#endregion
 }
