@@ -42,6 +42,10 @@ impl Complex {
     }
   }
 
+  pub fn arg(&self) -> f64 {
+    self.im.atan2(self.re)
+  }
+
   pub fn div(&self, other: Complex) -> Complex {
     let divisor = other.re * other.re + other.im * other.im;
     Complex {
@@ -88,6 +92,8 @@ pub enum FractalDescriptor {
   Julia(JuliaDescriptor),
   Mandelbrot(MandelbrotDescriptor),
   IteratedSinZ(IteratedSinZDescriptor),
+  NewtonRaphsonZ3(NewtonRaphsonZ3Descriptor),
+  NewtonRaphsonZ4(NewtonRaphsonZ4Descriptor),
   NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor),
   NovaNewtonZ4(NovaNewtonRaphsonZ4Descriptor),
 }
@@ -105,6 +111,12 @@ pub struct MandelbrotDescriptor {}
 pub struct IteratedSinZDescriptor {
   pub c: Complex,
 }
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct NewtonRaphsonZ3Descriptor {}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct NewtonRaphsonZ4Descriptor {}
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NovaNewtonRaphsonZ3Descriptor {}

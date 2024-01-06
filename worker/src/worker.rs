@@ -151,6 +151,53 @@ impl Worker {
       FractalDescriptor::IteratedSinZ(descriptor) => {
         self.generate_sin_z_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
       }
+      FractalDescriptor::NewtonRaphsonZ3(descriptor) => {
+        let epsilon = 1e-6;
+        let polynomial = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          let z_cubed = z_squared.mul(&z);
+          z_cubed.sub(&Complex::new(1.0, 0.0))
+        };
+
+        let derivative = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          Complex::new(3.0 * z_squared.re, 3.0 * z_squared.im)
+        };
+
+        self.generate_newton_fractal_locally(
+          &resolution,
+          &range,
+          &polynomial,
+          &derivative,
+          max_iterations,
+          epsilon,
+          "newton_fractal_z3",
+        )?
+      }
+      FractalDescriptor::NewtonRaphsonZ4(descriptor) => {
+        let epsilon = 1e-6;
+        let polynomial = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          let z_fourth = z_squared.mul(&z_squared);
+          z_fourth.sub(&Complex::new(1.0, 0.0))
+        };
+
+        let derivative = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          let z_cubed = z_squared.mul(&z);
+          Complex::new(4.0 * z_cubed.re, 4.0 * z_cubed.im)
+        };
+
+        self.generate_newton_fractal_locally(
+          &resolution,
+          &range,
+          &polynomial,
+          &derivative,
+          max_iterations,
+          epsilon,
+          "newton_fractal_z4",
+        )?
+      }
       FractalDescriptor::NovaNewtonZ3(_) => {
         let epsilon = 1e-6;
         let polynomial = |z: &Complex| {
@@ -472,6 +519,77 @@ impl Worker {
     };
 
     color
+  }
+
+  fn generate_newton_fractal_locally(
+    &self,
+    resolution: &Resolution,
+    range: &Range,
+    polynomial: &dyn Fn(&Complex) -> Complex,
+    derivative: &dyn Fn(&Complex) -> Complex,
+    max_iterations: i32,
+    epsilon: f64,
+    generated_image_name: &str,
+  ) -> Result<(), image::ImageError> {
+    let (width, height) = (resolution.nx, resolution.ny);
+    let mut image = ImageBuffer::new(width as u32, height as u32);
+
+    let scale_x = (range.max.x - range.min.x) / width as f64;
+    let scale_y = (range.max.y - range.min.y) / height as f64;
+
+    for x in 0..width {
+      for y in 0..height {
+        let cx = range.min.x + x as f64 * scale_x;
+        let cy = range.min.y + y as f64 * scale_y;
+
+        let mut z = Complex::new(cx, cy);
+        let mut i = 0;
+        let mut pzn = polynomial(&z).square_norm();
+
+        while i < max_iterations && pzn > epsilon {
+          z = z.sub(&polynomial(&z).div(derivative(&z)));
+          pzn = polynomial(&z).square_norm();
+          i += 1;
+        }
+
+        let pixel_intensity = PixelIntensity {
+          zn: (0.5 + z.arg() / (2.0 * std::f64::consts::PI)).fract() as f32,
+          count: Worker::get_convergence_value(pzn as f32, epsilon, i, max_iterations),
+        };
+
+        let pixel = Worker::map_color_newton_locally(&pixel_intensity);
+        image.put_pixel(x as u32, y as u32, pixel);
+      }
+    }
+
+    let generated_image_path = format!("generated/images/{}.png", generated_image_name);
+    image.save(generated_image_path)?;
+
+    Ok(())
+  }
+
+  fn get_convergence_value(pzn: f32, threshold: f64, count: i32, nmax: i32) -> f32 {
+    let accuracy = f32::log10(threshold as f32);
+
+    if count >= nmax {
+      1.0
+    } else {
+      0.5 - 0.5 * f32::cos(0.1 * (count as f32 - (f32::log10(pzn) / accuracy)))
+    }
+  }
+
+  fn map_color_newton_locally(pixel_intensity: &PixelIntensity) -> Rgb<u8> {
+    let start_red_color = Rgb([255, 0, 0]);
+    let end_blue_color = Rgb([0, 0, 255]);
+
+    let r = (start_red_color[0] as f64 * (1.0 - pixel_intensity.count as f64)
+      + end_blue_color[0] as f64 * pixel_intensity.count as f64) as u8;
+    let g = (start_red_color[1] as f64 * (1.0 - pixel_intensity.count as f64)
+      + end_blue_color[1] as f64 * pixel_intensity.count as f64) as u8;
+    let b = (start_red_color[2] as f64 * (1.0 - pixel_intensity.count as f64)
+      + end_blue_color[2] as f64 * pixel_intensity.count as f64) as u8;
+
+    Rgb([r, g, b])
   }
   //#endregion
 }
