@@ -1,6 +1,9 @@
+use rand::distributions::Alphanumeric;
+use rand::Rng;
 use serde_json::Value;
 use shared::FragmentTask;
 use std::io::{self, Read, Write};
+use std::iter;
 use std::net::TcpStream;
 use std::thread::sleep;
 use std::time::Duration;
@@ -14,7 +17,7 @@ pub struct Worker {
 }
 
 impl Worker {
-  pub fn new(server_addresse: String, connexion_name: String, default_port: u16) -> Worker {
+  pub fn new(server_addresse: String, default_port: u16, connexion_name: String) -> Worker {
     Worker {
       server_addresse,
       connexion_name,
@@ -26,6 +29,15 @@ impl Worker {
   pub fn connect_to_server(&mut self) -> io::Result<TcpStream> {
     let server_addr_str = format!("{}:{}", self.server_addresse, self.default_port);
     TcpStream::connect(server_addr_str)
+  }
+
+  pub fn generate_random_name_with_prefix(prefix: &str) -> String {
+    let random_suffix: String = iter::repeat(())
+      .map(|()| rand::thread_rng().sample(Alphanumeric) as char)
+      .take(5)
+      .collect();
+
+    format!("{}{}", prefix, random_suffix)
   }
 
   pub fn run_worker(&mut self, request: String) {
