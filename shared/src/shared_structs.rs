@@ -89,6 +89,7 @@ pub enum FractalDescriptor {
   Mandelbrot(MandelbrotDescriptor),
   IteratedSinZ(IteratedSinZDescriptor),
   NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor),
+  NovaNewtonZ4(NovaNewtonRaphsonZ4Descriptor),
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -108,7 +109,8 @@ pub struct IteratedSinZDescriptor {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct NovaNewtonRaphsonZ3Descriptor {}
 
-
+#[derive(Debug, Deserialize, Serialize)]
+pub struct NovaNewtonRaphsonZ4Descriptor {}
 
 pub struct PixelIntensity {
   pub zn: f32,

@@ -1,4 +1,8 @@
-use shared::{Complex, FractalDescriptor, FragmentRequest, IteratedSinZDescriptor, JuliaDescriptor, MandelbrotDescriptor, NovaNewtonRaphsonZ3Descriptor, Point, Range, Resolution};
+use shared::{
+  Complex, FractalDescriptor, FragmentRequest, IteratedSinZDescriptor, JuliaDescriptor,
+  MandelbrotDescriptor, NovaNewtonRaphsonZ3Descriptor, NovaNewtonRaphsonZ4Descriptor, Point, Range,
+  Resolution,
+};
 use worker::Worker;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -70,7 +74,29 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     max_iterations,
   )?;
 
-  worker.generate_fractal_locally(&resolution, &range, FractalDescriptor::NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor{}), max_iterations)?;
+  let nova_newton_z3_range = Range {
+    min: Point { x: -2.0, y: -1.5 },
+    max: Point { x: 2.0, y: 1.5 },
+  };
+
+  worker.generate_fractal_locally(
+    &resolution,
+    &nova_newton_z3_range,
+    FractalDescriptor::NovaNewtonZ3(NovaNewtonRaphsonZ3Descriptor {}),
+    max_iterations,
+  )?;
+
+  let nova_newton_z4_range = Range {
+    min: Point { x: -2.5, y: -1.5 },
+    max: Point { x: 2.0, y: 1.5 },
+  };
+
+  worker.generate_fractal_locally(
+    &resolution,
+    &nova_newton_z4_range,
+    FractalDescriptor::NovaNewtonZ4(NovaNewtonRaphsonZ4Descriptor {}),
+    max_iterations,
+  )?;
 
   Ok(())
 }

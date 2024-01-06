@@ -151,28 +151,53 @@ impl Worker {
       FractalDescriptor::IteratedSinZ(descriptor) => {
         self.generate_sin_z_fractal_locally(&resolution, &range, &descriptor, max_iterations)?
       }
-        FractalDescriptor::NovaNewtonZ3(_) => {
-          let epsilon = 1e-6;
-          let polynomial = |z: &Complex| {
-            let z_squared = z.mul(&z);
-            let z_cubed = z_squared.mul(&z);
-            z_cubed.sub(&Complex::new(1.0, 0.0)) // z^3 - 1
-          };
+      FractalDescriptor::NovaNewtonZ3(_) => {
+        let epsilon = 1e-6;
+        let polynomial = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          let z_cubed = z_squared.mul(&z);
+          z_cubed.sub(&Complex::new(1.0, 0.0)) // z^3 - 1
+        };
 
-          let derivative = |z: &Complex| {
-            let z_squared = z.mul(&z);
-            Complex::new(3.0 * z_squared.re, 3.0 * z_squared.im) // 3z^2
-          };
+        let derivative = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          Complex::new(3.0 * z_squared.re, 3.0 * z_squared.im) // 3z^2
+        };
 
-          self.generate_nova_newton_z3_fractal_locally(
-            &resolution,
-            &range,
-            &polynomial,
-            &derivative,
-            max_iterations,
-            epsilon,
-            )?
-        }
+        self.generate_nova_newton_fractal_locally(
+          &resolution,
+          &range,
+          &polynomial,
+          &derivative,
+          max_iterations,
+          epsilon,
+          "nova_newton_fractal_z3",
+        )?
+      }
+      FractalDescriptor::NovaNewtonZ4(_) => {
+        let epsilon = 1e-6;
+        let polynomial = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          let z_fourth = z_squared.mul(&z_squared);
+          z_fourth.sub(&Complex::new(1.0, 0.0)) // z^4 - 1
+        };
+
+        let derivative = |z: &Complex| {
+          let z_squared = z.mul(&z);
+          let z_cubed = z_squared.mul(&z);
+          Complex::new(4.0 * z_cubed.re, 4.0 * z_cubed.im) // 4z^3
+        };
+
+        self.generate_nova_newton_fractal_locally(
+          &resolution,
+          &range,
+          &polynomial,
+          &derivative,
+          max_iterations,
+          epsilon,
+          "nova_newton_fractal_z4",
+        )?
+      }
       _ => println!("Unknown fractal descriptor..."),
     }
 
@@ -351,7 +376,7 @@ impl Worker {
     Rgb([r, g, b])
   }
 
-  fn generate_nova_newton_z3_fractal_locally(
+  fn generate_nova_newton_fractal_locally(
     &self,
     resolution: &Resolution,
     range: &Range,
@@ -359,9 +384,10 @@ impl Worker {
     derivative: &dyn Fn(&Complex) -> Complex, // p'(z)
     max_iterations: i32,
     epsilon: f64,
+    generated_image_name: &str,
   ) -> Result<(), image::ImageError> {
     let (width, height) = (resolution.nx, resolution.ny);
-    let mut image = ImageBuffer::new(width as u32,height as u32);
+    let mut image = ImageBuffer::new(width as u32, height as u32);
 
     let scale_x = (range.max.x - range.min.x) / width as f64;
     let scale_y = (range.max.y - range.min.y) / height as f64;
@@ -395,7 +421,9 @@ impl Worker {
       }
     }
 
-    image.save("generated/images/nova_newton_fractal_z3.png")?;
+    let generated_image_path = format!("generated/images/{}.png", &generated_image_name);
+    image.save(generated_image_path)?;
+
     Ok(())
   }
 
@@ -403,12 +431,36 @@ impl Worker {
     let normalized_count = pixel_intensity.count;
     let slight_variation = (pixel_intensity.zn * 5.0).sin().abs() * 0.1;
 
-    let red_to_yellow = Rgb([(255.0 * normalized_count * 6.0) as u8, (255.0 * slight_variation) as u8, 0]);
-    let yellow_to_green = Rgb([255, (255.0 * (normalized_count * 6.0 - 1.0)) as u8, (255.0 * slight_variation) as u8]);
-    let green_to_cyan = Rgb([(255.0 * (1.0 - (normalized_count * 6.0 - 2.0))) as u8, 255, (255.0 * slight_variation) as u8]);
-    let cyan_to_blue = Rgb([(255.0 * slight_variation) as u8, 255, (255.0 * (normalized_count * 6.0 - 3.0)) as u8]);
-    let blue_to_magenta = Rgb([(255.0 * slight_variation) as u8, (255.0 * (1.0 - (normalized_count * 6.0 - 4.0))) as u8, 255]);
-    let magenta_to_red = Rgb([(255.0 * (normalized_count * 6.0 - 5.0)) as u8, (255.0 * slight_variation) as u8, 255]);
+    let red_to_yellow = Rgb([
+      (255.0 * normalized_count * 6.0) as u8,
+      (255.0 * slight_variation) as u8,
+      0,
+    ]);
+    let yellow_to_green = Rgb([
+      255,
+      (255.0 * (normalized_count * 6.0 - 1.0)) as u8,
+      (255.0 * slight_variation) as u8,
+    ]);
+    let green_to_cyan = Rgb([
+      (255.0 * (1.0 - (normalized_count * 6.0 - 2.0))) as u8,
+      255,
+      (255.0 * slight_variation) as u8,
+    ]);
+    let cyan_to_blue = Rgb([
+      (255.0 * slight_variation) as u8,
+      255,
+      (255.0 * (normalized_count * 6.0 - 3.0)) as u8,
+    ]);
+    let blue_to_magenta = Rgb([
+      (255.0 * slight_variation) as u8,
+      (255.0 * (1.0 - (normalized_count * 6.0 - 4.0))) as u8,
+      255,
+    ]);
+    let magenta_to_red = Rgb([
+      (255.0 * (normalized_count * 6.0 - 5.0)) as u8,
+      (255.0 * slight_variation) as u8,
+      255,
+    ]);
 
     let color = match (normalized_count * 6.0) as i32 {
       0..=1 => red_to_yellow,
