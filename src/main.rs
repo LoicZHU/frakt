@@ -23,8 +23,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
   //#region generate all fractals locally
   let max_iterations = 110;
   let resolution = Resolution { nx: 1280, ny: 960 };
+  let can_generate_all_fractals_locally = false;
 
-  generate_all_fractals_locally(&worker, &resolution, max_iterations)?;
+  if can_generate_all_fractals_locally {
+    generate_all_fractals_locally(&worker, &resolution, max_iterations)?;
+  }
   //#endregion
 
   Ok(())
