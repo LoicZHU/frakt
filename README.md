@@ -42,9 +42,16 @@
 - [ ] Travailleur :
   - [ ] Lancement d'un travailleur avec `worker [server_address]`
   - [ ] Gérer plusieurs définitions de fractales (en commençant par les ensemble de Julia)
-  - [ ] Avoir un résultat :
-    - [ ] effectuer un rendu en local
-    - [ ] sauvegarder le résultat dans une image
+  - [x] Avoir un résultat local (effectuer un rendu en local et sauvegarder le résultat dans une image) :
+    - [x] modèle Iterated sin Z
+    - [x] modèle Julia
+    - [x] modèle Mandelbrot
+    - [x] modèle Newton :
+      - [x] Z3
+      - [x] Z4
+    - [x] modèle Nova Newton :
+      - [x] Z3
+      - [x] Z4
 
 ## Modalites
 - [x] Code régie par `rustfmt`
