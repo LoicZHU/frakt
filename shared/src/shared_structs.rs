@@ -30,63 +30,6 @@ pub struct Complex {
   pub im: f64,
 }
 
-impl Complex {
-  pub fn new(re: f64, im: f64) -> Self {
-    Complex { re, im }
-  }
-
-  pub fn add(&self, other: &Complex) -> Complex {
-    Complex {
-      re: self.re + other.re,
-      im: self.im + other.im,
-    }
-  }
-
-  pub fn arg(&self) -> f64 {
-    self.im.atan2(self.re)
-  }
-
-  pub fn div(&self, other: Complex) -> Complex {
-    let divisor = other.re * other.re + other.im * other.im;
-    Complex {
-      re: (self.re * other.re + self.im * other.im) / divisor,
-      im: (self.im * other.re - self.re * other.im) / divisor,
-    }
-  }
-
-  pub fn mul(&self, other: &Complex) -> Complex {
-    Complex {
-      re: self.re * other.re - self.im * other.im,
-      im: self.re * other.im + self.im * other.re,
-    }
-  }
-
-  pub fn sin(&self) -> Complex {
-    Complex {
-      re: self.re.sin() * self.im.cosh(),
-      im: self.re.cos() * self.im.sinh(),
-    }
-  }
-
-  pub fn square(&self) -> Complex {
-    Complex {
-      re: self.re * self.re - self.im * self.im,
-      im: 2.0 * self.re * self.im,
-    }
-  }
-
-  pub fn square_norm(&self) -> f64 {
-    self.re * self.re + self.im * self.im
-  }
-
-  pub fn sub(&self, other: &Complex) -> Complex {
-    Complex {
-      re: self.re - other.re,
-      im: self.im - other.im,
-    }
-  }
-}
-
 #[derive(Debug, Deserialize, Serialize)]
 pub enum FractalDescriptor {
   Julia(JuliaDescriptor),
