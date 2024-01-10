@@ -1,5 +1,6 @@
+use local_fractal::{generate_all_fractal_models_locally, generate_fractal_locally};
 use serde_json::Value;
-use shared::FragmentTask;
+use shared::{FractalDescriptor, FragmentTask, Range, Resolution};
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 use std::thread::sleep;
@@ -126,5 +127,25 @@ impl Worker {
 
   pub fn stop_server(&mut self) {
     self.kill_connexion = true;
+  }
+
+  pub fn generate_all_fractal_models_locally(
+    &self,
+    resolution: &Resolution,
+    max_iterations: i32,
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    generate_all_fractal_models_locally(&resolution, max_iterations)?;
+    Ok(())
+  }
+
+  pub fn generate_fractal_locally(
+    &self,
+    resolution: &Resolution,
+    range: &Range,
+    fractal_descriptor: FractalDescriptor,
+    max_iterations: i32,
+  ) -> Result<(), Box<dyn std::error::Error>> {
+    generate_fractal_locally(&resolution, &range, fractal_descriptor, max_iterations)?;
+    Ok(())
   }
 }
