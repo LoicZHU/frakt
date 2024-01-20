@@ -1,7 +1,7 @@
 use complex::ComplexTrait;
 use image::{ImageBuffer, ImageError, Rgb};
 use shared::{
-  Complex, FractalDescriptor, IteratedSinZDescriptor, JuliaDescriptor, MandelbrotDescriptor,
+  ComplexOld, FractalDescriptor, IteratedSinZDescriptor, JuliaDescriptor, MandelbrotDescriptor,
   NewtonRaphsonZ3Descriptor, NewtonRaphsonZ4Descriptor, NovaNewtonRaphsonZ3Descriptor,
   NovaNewtonRaphsonZ4Descriptor, PixelIntensity, Point, Range, Resolution,
 };
@@ -35,14 +35,14 @@ pub fn generate_julia_fractal_with_defined_range_and_descriptor(
   };
 
   let _julia_descriptor_1 = JuliaDescriptor {
-    c: Complex {
+    c: ComplexOld {
       re: 0.285,
       im: 0.013,
     },
     divergence_threshold_square: 4.0,
   };
   let _julia_descriptor_2 = JuliaDescriptor {
-    c: Complex {
+    c: ComplexOld {
       re: -0.9,
       im: 0.27015,
     },
@@ -88,10 +88,10 @@ pub fn generate_iterated_sin_z_fractal_with_defined_range_and_descriptor(
   };
 
   let _sin_z_descriptor_1 = IteratedSinZDescriptor {
-    c: Complex { re: 1.0, im: 0.3 },
+    c: ComplexOld { re: 1.0, im: 0.3 },
   };
   let _sin_z_descriptor_2 = IteratedSinZDescriptor {
-    c: Complex { re: 0.2, im: 1.0 },
+    c: ComplexOld { re: 0.2, im: 1.0 },
   };
 
   generate_fractal_locally(
@@ -199,15 +199,15 @@ pub fn generate_fractal_locally(
     }
     FractalDescriptor::NewtonRaphsonZ3(_) => {
       let epsilon = 1e-6;
-      let polynomial = |z: &Complex| {
+      let polynomial = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
         let z_cubed = z_squared.multiply(&z);
-        z_cubed.subtract(&Complex::new(1.0, 0.0))
+        z_cubed.subtract(&ComplexOld::new(1.0, 0.0))
       };
 
-      let derivative = |z: &Complex| {
+      let derivative = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
-        Complex::new(3.0 * z_squared.re, 3.0 * z_squared.im)
+        ComplexOld::new(3.0 * z_squared.re, 3.0 * z_squared.im)
       };
 
       generate_newton_fractal_locally(
@@ -222,16 +222,16 @@ pub fn generate_fractal_locally(
     }
     FractalDescriptor::NewtonRaphsonZ4(_) => {
       let epsilon = 1e-6;
-      let polynomial = |z: &Complex| {
+      let polynomial = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
         let z_fourth = z_squared.multiply(&z_squared);
-        z_fourth.subtract(&Complex::new(1.0, 0.0))
+        z_fourth.subtract(&ComplexOld::new(1.0, 0.0))
       };
 
-      let derivative = |z: &Complex| {
+      let derivative = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
         let z_cubed = z_squared.multiply(&z);
-        Complex::new(4.0 * z_cubed.re, 4.0 * z_cubed.im)
+        ComplexOld::new(4.0 * z_cubed.re, 4.0 * z_cubed.im)
       };
 
       generate_newton_fractal_locally(
@@ -246,15 +246,15 @@ pub fn generate_fractal_locally(
     }
     FractalDescriptor::NovaNewtonZ3(_) => {
       let epsilon = 1e-6;
-      let polynomial = |z: &Complex| {
+      let polynomial = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
         let z_cubed = z_squared.multiply(&z);
-        z_cubed.subtract(&Complex::new(1.0, 0.0)) // z^3 - 1
+        z_cubed.subtract(&ComplexOld::new(1.0, 0.0)) // z^3 - 1
       };
 
-      let derivative = |z: &Complex| {
+      let derivative = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
-        Complex::new(3.0 * z_squared.re, 3.0 * z_squared.im) // 3z^2
+        ComplexOld::new(3.0 * z_squared.re, 3.0 * z_squared.im) // 3z^2
       };
 
       generate_nova_newton_fractal_locally(
@@ -269,16 +269,16 @@ pub fn generate_fractal_locally(
     }
     FractalDescriptor::NovaNewtonZ4(_) => {
       let epsilon = 1e-6;
-      let polynomial = |z: &Complex| {
+      let polynomial = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
         let z_fourth = z_squared.multiply(&z_squared);
-        z_fourth.subtract(&Complex::new(1.0, 0.0)) // z^4 - 1
+        z_fourth.subtract(&ComplexOld::new(1.0, 0.0)) // z^4 - 1
       };
 
-      let derivative = |z: &Complex| {
+      let derivative = |z: &ComplexOld| {
         let z_squared = z.multiply(&z);
         let z_cubed = z_squared.multiply(&z);
-        Complex::new(4.0 * z_cubed.re, 4.0 * z_cubed.im) // 4z^3
+        ComplexOld::new(4.0 * z_cubed.re, 4.0 * z_cubed.im) // 4z^3
       };
 
       generate_nova_newton_fractal_locally(
@@ -376,7 +376,7 @@ pub fn generate_mandelbrot_fractal_locally(
     for y in 0..height {
       let cx = range.min.x + (x as f64) * scale_x;
       let cy = range.min.y + (y as f64) * scale_y;
-      let c = Complex::new(cx, cy);
+      let c = ComplexOld::new(cx, cy);
 
       let pixel_intensity = mandelbrot(&c, max_iterations);
       let pixel = map_color_mandelbrot_fractal_locally(&pixel_intensity);
@@ -403,9 +403,9 @@ fn map_color_mandelbrot_fractal_locally(pixel_intensity: &PixelIntensity) -> Rgb
   Rgb([red_intensity, green_intensity, blue_intensity])
 }
 
-fn mandelbrot(c: &Complex, max_iterations: i32) -> PixelIntensity {
+fn mandelbrot(c: &ComplexOld, max_iterations: i32) -> PixelIntensity {
   let n = 4.0;
-  let mut z = Complex { re: 0.0, im: 0.0 };
+  let mut z = ComplexOld { re: 0.0, im: 0.0 };
   let mut i = 0;
 
   while z.square_norm() <= n && i < max_iterations {
@@ -438,7 +438,7 @@ pub fn generate_iterated_sin_z_fractal_locally(
     let cx = range.min.x + x as f64 * scale_re;
     let cy = range.min.y + y as f64 * scale_im;
 
-    let mut z = Complex::new(cx, cy);
+    let mut z = ComplexOld::new(cx, cy);
 
     let mut i = 0;
     while z.square_norm() <= n && i < max_iterations {
@@ -478,8 +478,8 @@ pub fn generate_nova_newton_fractal_locally(
   // &self,
   resolution: &Resolution,
   range: &Range,
-  polynomial: &dyn Fn(&Complex) -> Complex, // p(z)
-  derivative: &dyn Fn(&Complex) -> Complex, // p'(z)
+  polynomial: &dyn Fn(&ComplexOld) -> ComplexOld, // p(z)
+  derivative: &dyn Fn(&ComplexOld) -> ComplexOld, // p'(z)
   max_iterations: i32,
   epsilon: f64,
   generated_image_name: &str,
@@ -495,8 +495,8 @@ pub fn generate_nova_newton_fractal_locally(
       let cx = range.min.x + x as f64 * scale_x;
       let cy = range.min.y + y as f64 * scale_y;
 
-      let mut z = Complex::new(1.0, 0.0);
-      let c = Complex::new(cx, cy);
+      let mut z = ComplexOld::new(1.0, 0.0);
+      let c = ComplexOld::new(cx, cy);
 
       let mut i = 0;
       while i < max_iterations {
@@ -578,8 +578,8 @@ pub fn generate_newton_fractal_locally(
   // &self,
   resolution: &Resolution,
   range: &Range,
-  polynomial: &dyn Fn(&Complex) -> Complex,
-  derivative: &dyn Fn(&Complex) -> Complex,
+  polynomial: &dyn Fn(&ComplexOld) -> ComplexOld,
+  derivative: &dyn Fn(&ComplexOld) -> ComplexOld,
   max_iterations: i32,
   epsilon: f64,
   generated_image_name: &str,
@@ -595,7 +595,7 @@ pub fn generate_newton_fractal_locally(
       let cx = range.min.x + x as f64 * scale_x;
       let cy = range.min.y + y as f64 * scale_y;
 
-      let mut z = Complex::new(cx, cy);
+      let mut z = ComplexOld::new(cx, cy);
       let mut i = 0;
       let mut pzn = polynomial(&z).square_norm();
 

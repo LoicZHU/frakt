@@ -12,7 +12,7 @@ pub use fragment_result::FragmentResult;
 
 // shared structs
 mod shared_structs;
-pub use shared_structs::Complex;
+pub use shared_structs::ComplexOld;
 
 pub use shared_structs::FractalDescriptor;
 pub use shared_structs::IteratedSinZDescriptor;

@@ -25,7 +25,7 @@ pub struct Point {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
-pub struct Complex {
+pub struct ComplexOld {
   pub re: f64,
   pub im: f64,
 }
@@ -43,12 +43,12 @@ pub enum FractalDescriptor {
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct IteratedSinZDescriptor {
-  pub c: Complex,
+  pub c: ComplexOld,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub struct JuliaDescriptor {
-  pub c: Complex,
+  pub c: ComplexOld,
   pub divergence_threshold_square: f64,
 }
 
