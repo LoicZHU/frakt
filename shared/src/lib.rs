@@ -7,6 +7,9 @@ pub use fragement_request::FragmentRequestBuilder;
 mod fragment_task;
 pub use fragment_task::FragmentTask;
 
+mod fragment_result;
+pub use fragment_result::FragmentResult;
+
 // shared structs
 mod shared_structs;
 pub use shared_structs::Complex;
