@@ -94,23 +94,23 @@ impl Worker {
                     id = result.1;
                   }
                   FractalDescriptor::Mandelbrot(_) => {
-                    print!("generating mandlbrot ...")
+                    todo!("Mandelbrot is not implimented yet")
                   }
                   FractalDescriptor::IteratedSinZ(_) => {
-                    panic!("mandlbrot not emplimented yet");
+                    todo!("IteratedSinZ not emplimented yet");
                   }
                   FractalDescriptor::NewtonRaphsonZ3(_) => {
-                    panic!("mandlbrot not emplimented yet");
+                    todo!("NewtonRaphsonZ3 not emplimented yet");
                   }
                   FractalDescriptor::NewtonRaphsonZ4(_) => {
-                    panic!("mandlbrot not emplimented yet");
+                    todo!("NewtonRaphsonZ4 not emplimented yet");
                   }
 
                   FractalDescriptor::NovaNewtonZ4(_) => {
-                    panic!("mandlbrot not emplimented yet");
+                    todo!("NovaNewtonZ4 not emplimented yet");
                   }
                   FractalDescriptor::NovaNewtonZ3(_) => {
-                    panic!("mandlbrot not emplimented yet");
+                    todo!("NovaNewtonZ3 not emplimented yet");
                   }
                 }
               }
