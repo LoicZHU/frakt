@@ -19,7 +19,7 @@ fn read_user_input(prompt: &str) -> String {
   input.trim().to_string()
 }
 
-fn start(ip_address: &str, port: &str) -> Result<(),Box<dyn std::error::Error>> {
+fn start(ip_address: &str, port: &str) -> Result<(), Box<dyn std::error::Error>> {
   let connexion_name = read_user_input("enter connexion name: ");
   let work_load = read_user_input("enter work load: ");
 
@@ -78,12 +78,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         } else {
           println!("Invalid address format. Use <ip address>:<port>");
         }
-      },
+      }
       "worker generate locally" => {
-          println!("1- all fractals");
-          println!("2- Jullia fractal");
-          println!("3- Mandelbrot fractal");
-      },
+        println!("1- all fractals");
+        println!("2- Jullia fractal");
+        println!("3- Mandelbrot fractal");
+      }
       _ => {
         println!("Wrong input! Try --help for more info");
       }
