@@ -8,7 +8,7 @@ edition = "2021"
 [dependencies]
 complex = { path = "complex" }
 local_fractal = { path = "local_fractal" }
-fractal = {path = "fractal"}
+fractal_old = {path = "fractal_old" }
 server = { path = "server" }
 shared = { path = "shared" }
 worker = { path = "worker" }

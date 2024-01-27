@@ -1,4 +1,4 @@
-use fractal::{Fractal, FractalJulia};
+use fractal_old::{Fractal, FractalJulia};
 use image::EncodableLayout;
 use local_fractal::{generate_all_fractal_models_locally, generate_fractal_locally};
 use serde_json::Value;

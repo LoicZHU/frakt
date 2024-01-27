@@ -1,6 +1,6 @@
 use crate::Fractal;
 use complex::ComplexTrait;
-use shared::{Complex, FractalDescriptor, FragmentTask, PixelIntensity};
+use shared::{ComplexOld, FractalDescriptor, FragmentTask, PixelIntensity};
 
 pub struct FractalJulia {}
 
@@ -32,9 +32,9 @@ impl Fractal for FractalJulia {
 
     while y < y_end {
       while x < x_end {
-        let pixel_complexe = Complex { re: x, im: y };
+        let pixel_complexe = ComplexOld { re: x, im: y };
         if let FractalDescriptor::Julia(julia_descriptor) = descriptor {
-          let mut zn: Complex = pixel_complexe;
+          let mut zn: ComplexOld = pixel_complexe;
           let mut count = 0;
 
           while count < fragment_task.max_iteration
