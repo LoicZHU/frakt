@@ -7,6 +7,7 @@
       <sourceFolder url="file://$MODULE_DIR$/shared/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/worker/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/fractal/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/fractal_old/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/local_fractal/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
