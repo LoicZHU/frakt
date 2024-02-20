@@ -19,8 +19,19 @@ pub struct Range {
   pub max: Point,
 }
 
+pub struct PixelIntensity {
+  pub zn: f32,
+  pub count: f32,
+}
+
+impl PixelIntensity {
+  pub fn from_fractal_point((zn, count): (f32, f32)) -> Self {
+    Self { zn, count }
+  }
+}
+
 const EPSILON: f32 = 10e6;
-struct Generator<T: FractalComputer> {
+pub struct Generator<T: FractalComputer> {
   range: Range,
   resolution: Resolution,
   max_iterations: u32,
@@ -42,9 +53,9 @@ impl<T: FractalComputer> Generator<T> {
     }
   }
 
-  pub fn generate_fractal(&self) -> Vec<(f32, f32)> {
+  pub fn generate_fractal(&self) -> Vec<PixelIntensity> {
     let mut fractal_point: (f32, f32);
-    let mut fractal_points: Vec<(f32, f32)> = Vec::new();
+    let mut fractal_points: Vec<PixelIntensity> = Vec::new();
 
     let (step_x, step_y): (f32, f32) = (
       Self::calculate_step(self.range.min.x, self.range.max.x, &self.resolution.width),
@@ -58,7 +69,7 @@ impl<T: FractalComputer> Generator<T> {
     while self.resolution.width as f32 - x > EPSILON {
       while self.resolution.height as f32 - y > EPSILON {
         fractal_point = self.fractal_computer.compute_point(physical_point);
-        fractal_points.push(fractal_point);
+        fractal_points.push(PixelIntensity::from_fractal_point(fractal_point));
 
         x += step_x;
         physical_point.re = x.clone();
