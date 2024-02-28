@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 complex = { path = "../complex"}
-shared = { path = "../shared" }
+serde = { version = "1", features = ["derive"] }
