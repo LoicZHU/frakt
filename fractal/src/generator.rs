@@ -1,19 +1,20 @@
 use crate::computer::FractalComputer;
 use complex::Complex;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Resolution {
   pub width: u16,
   pub height: u16,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Point {
   pub x: f64,
   pub y: f64,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Range {
   pub min: Point,
   pub max: Point,
