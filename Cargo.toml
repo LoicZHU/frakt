@@ -7,17 +7,17 @@ edition = "2021"
 
 [dependencies]
 complex = { path = "complex" }
-local_fractal = { path = "local_fractal" }
-fractal_old = { path = "fractal_old" }
+#local_fractal = { path = "local_fractal" }
+#fractal_old = { path = "fractal_old" }
 server = { path = "server" }
-shared = { path = "shared" }
-worker = { path = "worker" }
+#shared = { path = "shared" }
+#worker = { path = "worker" }
 fractal = { path = "fractal" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 
 [workspace]
-members = ["complex", "fractal_old", "server", "shared", "worker", "fractal"]
+members = ["complex", "server", "fractal"]
 
 [dev-dependencies]
 rustfmt = "0.10.0"
