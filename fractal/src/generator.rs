@@ -35,7 +35,6 @@ const EPSILON: f32 = 10e6;
 pub struct Generator<T: FractalComputer> {
   range: Range,
   resolution: Resolution,
-  max_iterations: u32,
   fractal_computer: T,
 }
 
@@ -43,13 +42,11 @@ impl<T: FractalComputer> Generator<T> {
   pub fn new(
     range: Range,
     resolution: Resolution,
-    max_iterations: u32,
     fractal_computer: T,
   ) -> Self {
     Self {
       range,
       resolution,
-      max_iterations,
       fractal_computer,
     }
   }
