@@ -8,5 +8,5 @@ pub trait Fractal {
 
   fn generate_locally();
 
-  fn generate_graphicly(); 
+  fn generate_graphicly();
 }

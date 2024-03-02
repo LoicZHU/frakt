@@ -80,9 +80,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
       }
       "worker generate locally" => {
-        println!("1- all fractals");
-        println!("2- Jullia fractal");
-        println!("3- Mandelbrot fractal");
+          // Worker::generate_all_fractal_models_locally(&self, resolution, 100)
       }
       _ => {
         println!("Wrong input! Try --help for more info");

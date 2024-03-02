@@ -30,7 +30,6 @@ pub struct Complex {
   pub im: f64,
 }
 
-
 #[derive(Debug, Deserialize, Serialize, Clone, Copy)]
 pub enum FractalDescriptor {
   Julia(JuliaDescriptor),

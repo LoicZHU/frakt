@@ -62,6 +62,6 @@ impl Fractal for FractalJulia {
   }
 
   fn generate_graphicly() {
-      todo!("not implimented yet"); 
+    todo!("not implimented yet");
   }
 }
