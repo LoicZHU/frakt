@@ -7,4 +7,6 @@ pub trait Fractal {
   ) -> Vec<PixelIntensity>;
 
   fn generate_locally();
+
+  fn generate_graphicly();
 }

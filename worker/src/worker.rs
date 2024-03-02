@@ -1,8 +1,10 @@
-use fractal::{Fractal, FractalJulia};
+use fractal::{Fractal, FractalJulia, FractalMandelbrot, IteratedSinZ};
 use image::EncodableLayout;
 use local_fractal::{generate_all_fractal_models_locally, generate_fractal_locally};
 use serde_json::Value;
-use shared::{FractalDescriptor, FragmentResult, FragmentTask, PixelIntensity, Range, Resolution};
+use shared::{
+  Complex, FractalDescriptor, FragmentResult, FragmentTask, PixelIntensity, Range, Resolution,
+};
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 
@@ -64,26 +66,7 @@ impl Worker {
                     let julia = FractalJulia::new();
                     let pixels = julia.generate(&fragment_task, &fragment_task.fractal);
 
-                    // calculating data bloc offset and count
-                    let data_id = fragment_task.id.offset + fragment_task.id.count;
-                    let data_offset =
-                      fragment_task.resolution.nx as u32 * fragment_task.resolution.ny as u32;
-
-                    // bulding fragment result
-                    let fragment_result = FragmentResult::builder()
-                      .with_id(fragment_task.id.offset, fragment_task.id.count)
-                      .with_resolution(fragment_task.resolution.nx, fragment_task.resolution.ny)
-                      .with_range(
-                        fragment_task.range.min.x,
-                        fragment_task.range.min.y,
-                        fragment_task.range.max.x,
-                        fragment_task.range.max.y,
-                      )
-                      .with_pixels(data_id, data_offset)
-                      .build()
-                      .expect("error while building fragmentResult");
-
-                    // sending fragment result to server
+                    let fragment_result: FragmentResult = self.process_fraktal(fragment_task);
                     self
                       .send_fragment_result(&fragment_result, &mut inner_connexion, id, pixels)
                       .expect("error while sending");
@@ -94,13 +77,38 @@ impl Worker {
                     id = result.1;
                   }
                   FractalDescriptor::Mandelbrot(_) => {
-                    todo!("Mandelbrot is not implimented yet")
+                    println!("starting genration for julia Mandelbrot ...");
+
+                    let mandelbrot = FractalMandelbrot::new();
+                    let pixels = mandelbrot.generate(&fragment_task, &fragment_task.fractal);
+
+                    let fragment_result: FragmentResult = self.process_fraktal(fragment_task);
+
+                    self
+                      .send_fragment_result(&fragment_result, &mut inner_connexion, id, pixels)
+                      .expect("error while sending");
+
+                    // reading the server new task
+                    let result = self.read_response(&mut inner_connexion).unwrap();
+                    fragment_task = result.0;
+                    id = result.1;
                   }
-                  FractalDescriptor::IteratedSinZ(_) => {
-                    todo!("IteratedSinZ not emplimented yet");
+                  FractalDescriptor::IteratedSinZ(descriptor) => {
+                    println!("starting genration for julia IteratedSinZ ...");
+
+                    let iteratedSinZ = IteratedSinZ::new(descriptor.c);
+                    let pixels = iteratedSinZ.generate(&fragment_task, &fragment_task.fractal);
+
+                    let fragment_result: FragmentResult = self.process_fraktal(fragment_task);
+                    self
+                      .send_fragment_result(&fragment_result, &mut inner_connexion, id, pixels)
+                      .expect("error while sending");
+                    let result = self.read_response(&mut inner_connexion).unwrap();
+                    fragment_task = result.0;
+                    id = result.1;
                   }
                   FractalDescriptor::NewtonRaphsonZ3(_) => {
-                    todo!("NewtonRaphsonZ3 not emplimented yet");
+                    todo!()
                   }
                   FractalDescriptor::NewtonRaphsonZ4(_) => {
                     todo!("NewtonRaphsonZ4 not emplimented yet");
@@ -130,6 +138,27 @@ impl Worker {
         }
       }
     }
+  }
+
+  fn process_fraktal(&self, fragment_task: FragmentTask) -> FragmentResult {
+    let data_id = fragment_task.id.offset + fragment_task.id.count;
+    let data_offset = fragment_task.resolution.nx as u32 * fragment_task.resolution.ny as u32;
+
+    // bulding fragment result
+    let fragment_result = FragmentResult::builder()
+      .with_id(fragment_task.id.offset, fragment_task.id.count)
+      .with_resolution(fragment_task.resolution.nx, fragment_task.resolution.ny)
+      .with_range(
+        fragment_task.range.min.x,
+        fragment_task.range.min.y,
+        fragment_task.range.max.x,
+        fragment_task.range.max.y,
+      )
+      .with_pixels(data_id, data_offset)
+      .build()
+      .expect("error while building fragmentResult");
+
+    fragment_result
   }
 
   fn send_fragment_result(
