@@ -1,0 +1,63 @@
+name: Rust CI
+
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rustfmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: rustfmt check
+        run: cargo fmt --all -- --check
+
+  build:
+    runs-on: ${{ matrix.job.os }}
+    strategy:
+      matrix:
+        job:
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            use-cross: false
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            use-cross: false
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            use-cross: false
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            use-cross: true
+          - os: ubuntu-latest
+            target: i686-unknown-linux-gnu
+            use-cross: true
+          - os: ubuntu-latest
+            target: arm-unknown-linux-gnueabihf
+            use-cross: true
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            use-cross: true
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install cross
+        if: matrix.job.use-cross
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
+      - name: Build
+        run: cargo build --verbose
+      - name: Unit tests
+        shell: bash
+        run: |
+          if [[ "${{ matrix.job.use-cross }}" == "true" ]]; then
+            cross test --target ${{ matrix.job.target }} --verbose -- --nocapture
+          else
+            cargo test --target ${{ matrix.job.target }} --verbose -- --nocapture
+          fi

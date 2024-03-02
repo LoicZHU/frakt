@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -e
+
+# rustfmt
+echo '+cargo fmt'
+cargo fmt
+
+echo '+cargo fmt --all -- --check'
+cargo fmt --all -- --check
+
+# unit & integration tests
+echo '+cargo test'
+cargo test

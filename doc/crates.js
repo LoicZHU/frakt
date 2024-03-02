@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["complex","main","server","shared","worker"];

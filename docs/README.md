@@ -1,0 +1,1 @@
+Voir l'énoncé et les ressources du projet sur le [dépôt frakt](https://github.com/haveneer-training/frakt).
