@@ -58,6 +58,10 @@ impl Fractal for FractalJulia {
   }
 
   fn generate_locally() {
-    // Implementation for generate_locally goes here
+    todo!("not implimented yet");
+  }
+
+  fn generate_graphicly() {
+      todo!("not implimented yet"); 
   }
 }
