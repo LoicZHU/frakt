@@ -3,9 +3,8 @@ use crate::Point;
 use crate::Range;
 use crate::Resolution;
 use crate::U8Data;
-use serde::Deserialize;
-use serde::Serialize;
-use serde_json::json;
+use serde::{Deserialize, Serialize};
+use serde_json::Result as SerdeResult;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct FragmentResult {
@@ -15,33 +14,17 @@ pub struct FragmentResult {
   pub pixels: PixelData,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Id {
-  offset: u32,
-  count: u32,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct Pixels {
-  offset: u32,
-  count: u32,
-}
-
 impl FragmentResult {
   pub fn builder() -> FragmentResultBuilder {
-    FragmentResultBuilder {
-      id: None,
-      resolution: None,
-      range: None,
-      pixels: None,
-    }
+    FragmentResultBuilder::default()
   }
 
-  pub fn to_json(&self) -> Result<String, serde_json::Error> {
-    serde_json::to_string(&json!({"FragmentResult": self}))
+  pub fn to_json(&self) -> SerdeResult<String> {
+    serde_json::to_string(self)
   }
 }
 
+#[derive(Default)]
 pub struct FragmentResultBuilder {
   id: Option<U8Data>,
   resolution: Option<Resolution>,
@@ -73,11 +56,13 @@ impl FragmentResultBuilder {
     self
   }
 
-  pub fn build(self) -> Result<FragmentResult, &'static str> {
-    let id = self.id.ok_or("Id is missing")?;
-    let resolution = self.resolution.ok_or("Resolution is missing")?;
-    let range = self.range.ok_or("Range is missing")?;
-    let pixels = self.pixels.ok_or("Pixels is missing")?;
+  pub fn build(self) -> Result<FragmentResult, String> {
+    let id = self.id.ok_or_else(|| "Id is missing".to_string())?;
+    let resolution = self
+      .resolution
+      .ok_or_else(|| "Resolution is missing".to_string())?;
+    let range = self.range.ok_or_else(|| "Range is missing".to_string())?;
+    let pixels = self.pixels.ok_or_else(|| "Pixels is missing".to_string())?;
 
     Ok(FragmentResult {
       id,

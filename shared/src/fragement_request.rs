@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use serde_json::json;
+use serde_json::Result as SerdeResult;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct FragmentRequest {
@@ -8,25 +8,23 @@ pub struct FragmentRequest {
 }
 
 impl FragmentRequest {
-  fn new(worker_name: String, maximal_work_load: u32) -> FragmentRequest {
-    FragmentRequest {
-      worker_name: worker_name,
-      maximal_work_load: maximal_work_load,
+  fn new(worker_name: String, maximal_work_load: u32) -> Self {
+    Self {
+      worker_name,
+      maximal_work_load,
     }
   }
 
   pub fn builder() -> FragmentRequestBuilder {
-    FragmentRequestBuilder {
-      worker_name: None,
-      max_work_load: None,
-    }
+    FragmentRequestBuilder::default()
   }
 
-  pub fn to_json(&self) -> Result<String, serde_json::Error> {
-    serde_json::to_string(&json!({"FragmentRequest": self}))
+  pub fn to_json(&self) -> SerdeResult<String> {
+    serde_json::to_string(self)
   }
 }
 
+#[derive(Default)]
 pub struct FragmentRequestBuilder {
   worker_name: Option<String>,
   max_work_load: Option<u32>,
@@ -43,9 +41,13 @@ impl FragmentRequestBuilder {
     self
   }
 
-  pub fn build(self) -> Result<FragmentRequest, &'static str> {
-    let worker_name = self.worker_name.ok_or("Worker name is missing")?;
-    let max_work_load = self.max_work_load.ok_or("Max work load is missing")?;
+  pub fn build(self) -> Result<FragmentRequest, String> {
+    let worker_name = self
+      .worker_name
+      .ok_or_else(|| "Worker name is missing".to_string())?;
+    let max_work_load = self
+      .max_work_load
+      .ok_or_else(|| "Max work load is missing".to_string())?;
 
     Ok(FragmentRequest::new(worker_name, max_work_load))
   }
