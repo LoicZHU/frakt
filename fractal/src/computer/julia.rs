@@ -37,11 +37,11 @@ impl FractalComputer for JuliaComputer {
     z * z + c
   }
 
-  fn has_converged(&self, zn: &Complex) -> bool {
-    zn.square_norm() < self.divergence_threshold_square()
+  fn has_diverged(&self, zn: &Complex) -> bool {
+    zn.square_norm() > self.divergence_threshold_square()
   }
 
   fn zn_computer(&self, zn: &Complex) -> f32 {
-    zn.square_norm() / self.divergence_threshold_square()
+    zn.argument() / self.divergence_threshold_square()
   }
 }

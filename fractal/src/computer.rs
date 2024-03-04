@@ -7,7 +7,7 @@ pub trait FractalComputer {
   fn fractal_param(&self) -> Complex;
   fn divergence_threshold_square(&self) -> f32;
   fn fractal_function(z: Complex, c: Complex) -> Complex;
-  fn has_converged(&self, zn: &Complex) -> bool;
+  fn has_diverged(&self, zn: &Complex) -> bool;
   fn zn_computer(&self, zn: &Complex) -> f32;
 
   fn compute_point(&self, complex_point: Complex) -> (f32, f32) {
@@ -17,7 +17,7 @@ pub trait FractalComputer {
     while i < self.max_iterations() {
       zn = Self::fractal_function(zn, self.fractal_param());
 
-      if self.has_converged(&zn) {
+      if self.has_diverged(&zn) {
         break;
       }
       i += 1;
