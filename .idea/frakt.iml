@@ -10,6 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/fractal/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/fractal_old/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/local_fractal/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/network/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />

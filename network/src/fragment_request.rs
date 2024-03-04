@@ -10,8 +10,8 @@ pub struct FragmentRequest {
 impl FragmentRequest {
   fn new(worker_name: String, maximal_work_load: u32) -> FragmentRequest {
     FragmentRequest {
-      worker_name: worker_name,
-      maximal_work_load: maximal_work_load,
+      worker_name,
+      maximal_work_load,
     }
   }
 

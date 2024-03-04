@@ -1,18 +1,20 @@
-use crate::shared_structs::PixelData;
-use crate::Point;
-use crate::Range;
-use crate::Resolution;
-use crate::U8Data;
+use fractal::generator::{Point, Range, Resolution};
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::json;
 
 #[derive(Debug, Deserialize, Serialize)]
+pub struct Metadata {
+  offset: u32,
+  count: u32,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
 pub struct FragmentResult {
-  pub id: U8Data,
+  pub id: Metadata,
   pub resolution: Resolution,
   pub range: Range,
-  pub pixels: PixelData,
+  pub pixels: Metadata,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -43,20 +45,20 @@ impl FragmentResult {
 }
 
 pub struct FragmentResultBuilder {
-  id: Option<U8Data>,
+  id: Option<Metadata>,
   resolution: Option<Resolution>,
   range: Option<Range>,
-  pixels: Option<PixelData>,
+  pixels: Option<Metadata>,
 }
 
 impl FragmentResultBuilder {
   pub fn with_id(mut self, offset: u32, count: u32) -> Self {
-    self.id = Some(U8Data { offset, count });
+    self.id = Some(Metadata { offset, count });
     self
   }
 
-  pub fn with_resolution(mut self, nx: u16, ny: u16) -> Self {
-    self.resolution = Some(Resolution { nx, ny });
+  pub fn with_resolution(mut self, width: u16, height: u16) -> Self {
+    self.resolution = Some(Resolution { width, height });
     self
   }
 
@@ -69,7 +71,7 @@ impl FragmentResultBuilder {
   }
 
   pub fn with_pixels(mut self, offset: u32, count: u32) -> Self {
-    self.pixels = Some(PixelData { offset, count });
+    self.pixels = Some(Metadata { offset, count });
     self
   }
 

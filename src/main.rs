@@ -1,7 +1,12 @@
 // use shared::{FragmentRequest, Resolution};
 // use worker::Worker;
 
-fn main() -> Result<(), ()> {
+use fractal::computer::julia::JuliaComputer;
+use fractal::generator::Generator;
+use network::{Client, FractalDescriptor};
+use std::io;
+
+fn main() -> Result<(), io::Error> {
   // let mut worker = Worker::new("localhost".to_string(), "group3".to_string(), 8787);
   //
   // let request = FragmentRequest::builder()
@@ -24,7 +29,36 @@ fn main() -> Result<(), ()> {
   // if can_generate_all_fractals_locally {
   //   worker.generate_all_fractal_models_locally(&resolution, max_iterations)?;
   // }
-  // //#endregion
-  //
-  Ok(())
+  //#endregion
+  let mut client = Client::new(
+    String::from("localhost"),
+    String::from("test_connection"),
+    None,
+  );
+
+  client.connect_to_server()?;
+  client.send_fragment_request(String::from("random name"), 2000000)?;
+  loop {
+    let (fragment_task, fragment_task_id) = client.read_fragment_task()?;
+
+    let FractalDescriptor::Julia(julia_descriptor) = fragment_task.fractal_descriptor;
+
+    let julia_computer = JuliaComputer::new(
+      julia_descriptor.c,
+      fragment_task.max_iteration,
+      julia_descriptor.divergence_threshold_square as f32,
+    );
+    let fractal_generator: Generator<JuliaComputer> = Generator::new(
+      fragment_task.range,
+      fragment_task.resolution,
+      julia_computer,
+    );
+
+    println!("Generating fractals");
+    let pixels = fractal_generator.generate_fractal();
+
+    println!("Sending fragment result");
+    client.connect_to_server()?;
+    client.send_fragment_result(fragment_task, fragment_task_id, pixels)?;
+  }
 }
