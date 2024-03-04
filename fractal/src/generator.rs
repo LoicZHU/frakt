@@ -4,7 +4,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Copy, Clone, Serialize, Deserialize)]
 pub struct Resolution {
+  #[serde(rename = "nx")]
   pub width: u16,
+  #[serde(rename = "ny")]
   pub height: u16,
 }
 
@@ -20,6 +22,7 @@ pub struct Range {
   pub max: Point,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PixelIntensity {
   pub zn: f32,
   pub count: f32,
@@ -31,7 +34,6 @@ impl PixelIntensity {
   }
 }
 
-const EPSILON: f32 = 10e6;
 pub struct Generator<T: FractalComputer> {
   range: Range,
   resolution: Resolution,
@@ -39,11 +41,7 @@ pub struct Generator<T: FractalComputer> {
 }
 
 impl<T: FractalComputer> Generator<T> {
-  pub fn new(
-    range: Range,
-    resolution: Resolution,
-    fractal_computer: T,
-  ) -> Self {
+  pub fn new(range: Range, resolution: Resolution, fractal_computer: T) -> Self {
     Self {
       range,
       resolution,
@@ -56,30 +54,37 @@ impl<T: FractalComputer> Generator<T> {
     let mut fractal_points: Vec<PixelIntensity> = Vec::new();
 
     let (step_x, step_y): (f32, f32) = (
-      Self::calculate_step(self.range.min.x, self.range.max.x, &self.resolution.width),
-      Self::calculate_step(self.range.min.y, self.range.max.y, &self.resolution.height),
+      Self::calculate_step(self.range.min.x, self.range.max.x, self.resolution.width),
+      Self::calculate_step(self.range.min.y, self.range.max.y, self.resolution.height),
     );
-    let mut x: f32 = 0.;
-    let mut y: f32 = 0.;
-    let mut physical_point = Complex::new(x.clone(), y.clone());
+    let mut x: f32 = self.range.min.x as f32;
+    let mut y: f32 = self.range.min.y as f32;
+    let mut physical_point = Complex::new(x, y);
 
     // using this form to deal with floating point numbers infinite loop problem
-    while self.resolution.width as f32 - x > EPSILON {
-      while self.resolution.height as f32 - y > EPSILON {
+    while y < self.range.max.y as f32 {
+      while x < self.range.max.x as f32 {
         fractal_point = self.fractal_computer.compute_point(physical_point);
         fractal_points.push(PixelIntensity::from_fractal_point(fractal_point));
 
         x += step_x;
-        physical_point.re = x.clone();
+        physical_point.re = x;
+        if (self.range.max.x as f32 - x).abs() < f32::EPSILON {
+          break;
+        }
       }
+      x = self.range.min.x as f32;
       y += step_y;
-      physical_point.im = y.clone();
+      physical_point.im = y;
+      if (self.range.max.y as f32 - y).abs() < f32::EPSILON {
+        break;
+      }
     }
 
     fractal_points
   }
 
-  fn calculate_step(min_coordinate: f64, max_coordinate: f64, resolution_dimension: &u16) -> f32 {
+  fn calculate_step(min_coordinate: f64, max_coordinate: f64, resolution_dimension: u16) -> f32 {
     ((max_coordinate - min_coordinate) / resolution_dimension.clone() as f64) as f32
   }
 }
